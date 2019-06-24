@@ -1,0 +1,3 @@
+RewriteEngine On
+RewriteBase /api/
+RewriteRule (.*) http://173.212.224.161/REST/server/api/$1 [P]
