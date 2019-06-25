@@ -1,13 +1,17 @@
 <?php
+include_once "config.php";
+include_once "libs/carMarket.php";
 
-abstract class CarMarketApi
+class CarMarketApi
 {
-    protected $method = ''; //GET|POST|PUT|DELETE
-
     public $requestUri = [];
     public $requestParams = [];
 
     protected $action = ''; //Название метод для выполнения
+    protected $method = ''; //GET|POST|PUT|DELETE
+
+    protected $carMarket;
+    protected $test;
 
 
     public function __construct()
@@ -16,9 +20,12 @@ abstract class CarMarketApi
         header("Access-Control-Allow-Methods: *");
         header("Content-Type: application/json");
 
-        $url = trim($_SERVER['REQUEST_URI'];
-        $this->requestUri = explode('/', $url,'/'));
+        $url = trim($_SERVER['REQUEST_URI']);
+        $this->requestUri = explode('/', $url);
+        array_splice($this->requestUri,4,1);
         $this->requestParams = $_REQUEST;
+
+        $this->test = $url;//print_r($this->requestUri,true);
 
         $this->method = $_SERVER['REQUEST_METHOD'];
         if ($this->method == 'POST' && array_key_exists('HTTP_X_HTTP_METHOD', $_SERVER))
@@ -34,23 +41,24 @@ abstract class CarMarketApi
                 throw new Exception("Unexpected Header");
             }
         }
+        $carMarket  = new carMarket;
     }
 
     public function run()
     {
-        if(array_shift($this->requestUri) !== 'api' || array_shift($this->requestUri) !== get_class($this))
+        $d = array_shift($this->requestUri);
+        if($d !== 'api' || array_shift($this->requestUri) !== get_class($this))
         {
-            throw new RuntimeException('API Not Found', 404);
+            throw new RuntimeException('API Not Found _'.$this->test, 404);
         }
-        if($this->requestUri)
-        {
-            $this->action = array_shift($this->requestUri);
-        }else
+
+        $this->action = ($this->requestUri ? array_shift($this->requestUri) : null);
+
+        if((!$this->action) || !method_exists($this->action))
         {
             throw new RuntimeException('Invalid Method', 405);
         }
-        $this->getAction();
-         return $this->{$this->action}();
+        return $this->{$this->action}();
        
     }
 
@@ -70,12 +78,58 @@ abstract class CarMarketApi
         return ($status[$code])?$status[$code]:$status[500];
     }
 
+    protected function returnResult($res)
+    {
+        if($res){
+            return $this->response($res, 200);
+        }
+        return $this->response('Data not found', 404);
+    }
 
-    public function listCars();//get
-    public function getInfo($idCar, $color); //get
-    public function findCars($var);//get
-    public function setOrder($idCar, $name, $surName, $paymentMethod);//post
-    public function getOrders();//get
+    public function listCars()//get
+    {
+        return $this->returnResult($this->carMarket->listCars());
+    }
+
+    public function getInfo() //get
+    {
+        $idCar = array_shift($this->requestUri);
+        $color = array_shift($this->requestUri);
+
+        return $this->returnResult($this->carMarket->getInfo($idCar, $color));
+    }
+
+    public function findCars()//get
+    {
+        return $this->returnResult($this->carMarket->findCars($this->requestParams));
+    }
+
+    public function getOrders()//get
+    {
+        return $this->returnResult($this->carMarket->getOrders());
+    }
+
     public function getDataDescription()//get
+    {
+        return $this->returnResult($this->carMarket->getDataDescription());
+    }
+
+    public function setOrder()//post
+    {
+        $idCar = (array_key_exists('idCar', $this->requestParams) ?  $this->requestParams['idCar']  : '');
+        $name = (array_key_exists('name', $this->requestParams) ?  $this->requestParams['name']  : '');
+        $surName = (array_key_exists('surName', $this->requestParams) ?  $this->requestParams['surName']  : '');
+        $paymentMethod = (array_key_exists('paymentMethod', $this->requestParams) ?  $this->requestParams['paymentMethod']  : '');
+        
+        if($idCar && $name && $surName && $paymentMethod)
+        {
+            $res = $this->carMarket->setOrder($idCar, $name, $surName, $paymentMethod);
+            if($res)
+            {
+                return $this->response('Data saved.', 200);
+            }
+        }
+        return $this->response("Saving error", 500);
+    }
 
 }

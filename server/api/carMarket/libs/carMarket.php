@@ -1,6 +1,6 @@
 <?php
-include_once "./libs/MySQL.php";
-include_once "./config.php";
+include_once "MySQL.php";
+//include_once "config.php";
 
 class carMarket
 {
@@ -112,7 +112,7 @@ class carMarket
         {
             $this->DB->connect()->setTableName("orders_cars")->SetFild("id_car", $idCar)->SetFild("name", $name)->SetFild("surName", $surName)->SetFild("pay", $paymentMethod)->insert();
 
-            $this->DB->execution();
+            $res =$this->DB->execution();
             return $res;
         }
         return false;

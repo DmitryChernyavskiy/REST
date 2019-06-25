@@ -1,5 +1,6 @@
 <?php
-include_once "./libs/QuerySQL.php";
+include_once "QuerySQL.php";
+
 class mySQL extends QuerySQL
 {
     static private $link, $typeDB, $hostDB, $nameDB, $user, $pass;
