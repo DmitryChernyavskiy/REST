@@ -2,16 +2,16 @@
 include_once "config.php";
 include_once "libs/carMarket.php";
 
-class CarMarketApi
+class carMarketApi
 {
     public $requestUri = [];
     public $requestParams = [];
 
-    protected $action = ''; //Название метод для выполнения
+    protected $action = ''; 
     protected $method = ''; //GET|POST|PUT|DELETE
 
     protected $carMarket;
-    protected $test;
+    protected $test = ['user10'=>'123']; //test auturisation
 
 
     public function __construct()
@@ -22,10 +22,8 @@ class CarMarketApi
 
         $url = trim($_SERVER['REQUEST_URI']);
         $this->requestUri = explode('/', $url);
-        array_splice($this->requestUri,4,1);
+        $this->requestUri = array_splice($this->requestUri,4);
         $this->requestParams = $_REQUEST;
-
-        $this->test = $url;//print_r($this->requestUri,true);
 
         $this->method = $_SERVER['REQUEST_METHOD'];
         if ($this->method == 'POST' && array_key_exists('HTTP_X_HTTP_METHOD', $_SERVER))
@@ -41,25 +39,44 @@ class CarMarketApi
                 throw new Exception("Unexpected Header");
             }
         }
-        $carMarket  = new carMarket;
+        $user = $_SERVER['PHP_AUTH_USER'];
+        $pass = $_SERVER['PHP_AUTH_PW'];
+        $validated = (isset($user) && $pass == $this->test[$user]);
+        if (!$validated) {
+            header('WWW-Authenticate: Basic realm="My Realm"');
+            $this->response('', 401);
+            exit;
+        }
+
+        $this->carMarket  = new carMarket;
     }
 
     public function run()
     {
-        $d = array_shift($this->requestUri);
-        if($d !== 'api' || array_shift($this->requestUri) !== get_class($this))
+        if(array_shift($this->requestUri) !== 'api' || array_shift($this->requestUri) !== get_class($this))
         {
-            throw new RuntimeException('API Not Found _'.$this->test, 404);
+            throw new RuntimeException('API Not Found', 404);
         }
 
         $this->action = ($this->requestUri ? array_shift($this->requestUri) : null);
 
-        if((!$this->action) || !method_exists($this->action))
+        if((!$this->action) || !method_exists($this, $this->action))
         {
-            throw new RuntimeException('Invalid Method', 405);
+            throw new RuntimeException('Invalid Method '.$this->action, 405);
         }
         return $this->{$this->action}();
        
+    }
+
+    private function requestStatus($code) {
+        $status = array(
+            200 => 'OK',
+            401 => 'Unauthorized',
+            404 => 'Not Found',
+            405 => 'Method Not Allowed',
+            500 => 'Internal Server Error',
+        );
+        return ($status[$code]) ? $status[$code] : $status[500];
     }
 
     protected function response($data, $status = 500)
@@ -68,19 +85,10 @@ class CarMarketApi
         return json_encode($data);
     }
 
-    private function requestStatus($code) {
-        $status = array(
-            200 => 'OK',
-            404 => 'Not Found',
-            405 => 'Method Not Allowed',
-            500 => 'Internal Server Error',
-        );
-        return ($status[$code])?$status[$code]:$status[500];
-    }
-
     protected function returnResult($res)
     {
-        if($res){
+        if($res)
+        {
             return $this->response($res, 200);
         }
         return $this->response('Data not found', 404);

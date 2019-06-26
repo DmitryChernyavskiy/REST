@@ -1,10 +1,13 @@
 <?php
 
-require_once 'carMarket/CarMarketApi.php';
+require_once 'carMarket/carMarketApi.php';
 
-try {
-    $api = new CarMarketApi();
+try 
+{
+    $api = new carMarketApi();
     echo $api->run();
-} catch (Exception $e) {
+}
+catch (Exception $e)
+{
     echo json_encode(Array('error' => $e->getMessage()));
 }

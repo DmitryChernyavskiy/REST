@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Car market</title>
+</head>
+    <body>
+        <style>
+            .listList-enter-active, .listList-leave-active {
+                transition: all 1s;
+            }
+            .listList-enter {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            .listList-leave-to /* .list-leave-active до версии 2.1.8 */ {
+                opacity: 0;
+                transform: translateX(150px);
+            }
+        </style>
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.js"></script>
+            <div id="CarMarket">
+                <h1>Market</h1>
+                <car-filter :list = "product" @basket_plus="basket_plus"> </car-filter>
+                <br>
+                <car-list :list = "basket" @basket_minus="basket_minus" @basket_remove="basket_remove"> </car-list>
+            </div>
+        <script>
+            Vue.config.devtools  = true;
+            Vue.component('market-item', {
+                props: ['item', 'index'],
+                template: `<li>
+                    <span style="width: 150px; display: inline-block">{{item.name}} - {{item.price}}</span>
+                    <button v-on:click = "plus_btn()">+</button>
+                    </li>`,
+                methods: {
+                    plus_btn: function() {
+                        this.$emit('basket_plus', this.index);
+                    }
+                }
+            });
+            
+            Vue.component('basket-item', {
+                props: ['item', 'index'],
+                template: `<li>
+                    <span style="width: 150px; display: inline-block">{{item.name}} {{item.count}} x {{item.price}}</span>
+                    <button v-on:click="minus_btn()">-</button>
+                    <button v-on:click="remove_btn()">X</button>
+                    </li>`,
+                methods: {
+                    minus_btn: function() {
+                        this.$emit('basket_minus', this.index);
+                    },
+                    remove_btn: function() {
+                        this.$emit('basket_remove', this.index);
+                    }
+                
+                }
+            });
+            
+            Vue.component( 'market-list', {
+                props: ['list'],
+                template: `<ul>
+                        <market-item v-for = "(item, index) in list" :item="item" :index="index" @basket_plus="basket_plus"> </market-item>
+                    </ul>`,
+                methods: {
+                        basket_plus: function(index) {
+                        this.$emit('basket_plus', index)
+                    }
+                }
+            });
+            
+            
+            Vue.component( 'basket-list', {
+                props: ['list'],
+                template: `<ul>
+                        <transition-group name="listList" tag="p">
+                            <basket-item v-for = "(item, index) in list" :item="item" :index="index" v-bind:key="item.name" @basket_remove="basket_remove" @basket_minus="basket_minus"> </basket-item>
+                        </transition-group>
+                    </ul>`,
+                methods: {
+                    basket_minus: function(index) {
+                        this.$emit('basket_minus', index)
+                    },
+                        basket_remove: function(index) {
+                        this.$emit('basket_remove', index)
+                    }
+                }
+                
+            });
+            new Vue({
+                el: "#CarMarket",
+                data: function(){
+                    return {
+                        basket: JSON.parse(localStorage.getItem('todo5_basket') || '[]'),
+                        product: [{name: "apples", price: 15.5}, {name: "pineapples", price: 70.35}, {name: "melons", price: 25}, {name: "carrots", price: 7.89}]
+                    }
+                },
+                methods: {
+                    basket_plus: function(index) {
+                        var item = this.product[index];
+                        var ind = this.basket.map(function(x) {return x.name; }).indexOf(item.name);
+                        if (ind < 0)
+                        {
+                            item2 = JSON.parse(JSON.stringify(item));
+                            item2.count = 0;
+                            this.basket.push(item2);
+                        } else
+                        {
+                            item2 = this.basket[ind];
+                        }
+                        item2.count++;
+                    },
+                    basket_minus: function(index) {
+                        var item2 = this.basket[index];
+                        
+                        if (item2.count>1)
+                        {
+                            item2.count--;
+                        } else
+                        {
+                            this.basket.splice(index, 1);
+                        }
+                    },
+                    basket_remove: function(index) {
+                        this.basket.splice(index, 1);
+                    }
+                },
+                computed: {
+                    total: function(){
+                        var sum= 0;
+                        this.basket.forEach(function(item) {
+                        sum += item.count * item.price;});
+                        return Math.round(sum*100)/100;
+                    }
+                },
+                watch: {
+                    basket: function() {
+                        localStorage.setItem('todo5_basket', JSON.stringify(this.basket))
+                    }
+                }
+            });
+        </script>
+    </body>
+</html>
