@@ -8,24 +8,14 @@
 </head>
     <body>
         <style>
-            .listList-enter-active, .listList-leave-active {
-                transition: all 1s;
-            }
-            .listList-enter {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            .listList-leave-to /* .list-leave-active до версии 2.1.8 */ {
-                opacity: 0;
-                transform: translateX(150px);
-            }
+
         </style>
         <script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.js"></script>
         <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 
             <div id="CarMarket">
                 <h1>Market</h1>
-                <car-condition :conditions = "info" @loadListCars="loadListCars"> </car-condition>
+                <car-condition :conditions = "info" v-on:load_list_cars="loadlistcars()"> </car-condition>
                 <car-list :list = "listCar"> </car-list>
             </div>
         <script>
@@ -50,12 +40,12 @@
                     <car-condition_row v-for = "(value, name) in conditions " :name="name" :item = "value"></car-condition_row>
                     <tr>
                       <td></td>
-                      <td><button v-on:click = "findCars()">find</button></td>
+                      <td><button v-on:click = "find_cars()">find</button></td>
                     </tr>
                   </table>`,
                 methods: {
-                    findCars: function() {
-                         this.$emit('findCars');
+                    find_cars: function() {
+                         this.$emit('load_list_cars');
                     }
                 }
             })
@@ -67,7 +57,7 @@
                     </td></tr>`,
                 methods: {
                     infoCar: function(id, color) {
-                        //this.$emit('basket_minus', this.index);
+                        //this.$emit('', this.index);
                     }
                 }
 
@@ -104,26 +94,37 @@
                         }
                         return obj;
                     },
-                    loadListCars: function(){
-                        conditionIsSet = false;
+                    getCondition: function() {
+                        obj = {};
                         for (key in this.info) {
-                            if (this.info[key].selected_value){
-                                conditionIsSet = true; breack;
+                            selected_value = this.info[key].selected_value;
+                            if (selected_value){
+                                obj[key] = selected_value;
                             }
                         }
-                        if (conditionIsSet){
-                            //axios.get('http://173.212.224.161/REST/server/api/carMarketApi/listCars').then(response => (this.listCar = response.data));
-                            delete this.listCar[0];
+                        return obj;
+                    },
+                    loadlistcars: function(){
+                        conditions = this.getCondition();
+                        count = 0;
+                        for (var key in conditions) {
+                            count++; break;
+                        }
+
+                        if (this.rrr!=0){
+                            axios.get('http://tc.geeksforless.net/~user10/REST/server/api/carMarketApi/findCars', {
+                                params: conditions}).then(response => (this.listCar = response.data));
+                            
                         }else{
-                            axios.get('http://173.212.224.161/REST/server/api/carMarketApi/listCars').then(response => (this.listCar = response.data));
+                            axios.get('http://tc.geeksforless.net/~user10/REST/server/api/carMarketApi/listCars').then(response => (this.listCar = response.data));
                         }
                     }
                 },
                 beforeMount() {
-                    axios.get('http://173.212.224.161/REST/server/api/carMarketApi/getDataDescription').then(response => (this.info = this.restuctInfo(response.data)))
+                    axios.get('http://tc.geeksforless.net/~user10/REST/server/api/carMarketApi/getDataDescription').then(response => (this.info = this.restuctInfo(response.data)))
                 },
                 mounted() {
-                    this.loadListCars();
+                    this.loadlistcars();
                 }
 
             });

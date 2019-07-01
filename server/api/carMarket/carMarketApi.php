@@ -1,4 +1,3 @@
-    
 <?php
 include_once "config.php";
 include_once "libs/carMarket.php";
@@ -16,8 +15,11 @@ class carMarketApi
         header("Access-Control-Allow-Methods: *");
         header("Content-Type: application/json");
         $url = trim($_SERVER['REQUEST_URI']);
+        if ($str=strpos($url, "?")){
+            $url=substr($url, 0, $str);
+        };
         $this->requestUri = explode('/', $url);
-        $this->requestUri = array_splice($this->requestUri,3);
+        $this->requestUri = array_splice($this->requestUri,4);
         $this->requestParams = $_REQUEST;
         $this->method = $_SERVER['REQUEST_METHOD'];
         if ($this->method == 'POST' && array_key_exists('HTTP_X_HTTP_METHOD', $_SERVER))
