@@ -23,31 +23,107 @@
         <script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.js"></script>
         <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 
-        <div id="CarMarket">
-            <h1>Market</h1>
-            {{info}}
-
-        </div>
+            <div id="CarMarket">
+                <h1>Market</h1>
+                <car-condition :conditions = "info" @loadListCars="loadListCars"> </car-condition>
+                <car-list :list = "listCar"> </car-list>
+            </div>
         <script>
             Vue.config.devtools  = true;
-                
 
+            Vue.component( 'car-condition_row', {
+                props: ['name', 'item'],
+                template: `<tr><td>{{name}}</td>
+                        <td><select v-model="item.selected_value">
+                        <option v-for = "item in item.select" :item = "item">{{item}}</option>
+                    </select></td></tr>`
+
+            });
+
+            Vue.component('car-condition',{
+                props: ['conditions'],
+                template:`<table>
+                    <tr>
+                      <th>Parameters</th>
+                      <th>Values</th>
+                    </tr>
+                    <car-condition_row v-for = "(value, name) in conditions " :name="name" :item = "value"></car-condition_row>
+                    <tr>
+                      <td></td>
+                      <td><button v-on:click = "findCars()">find</button></td>
+                    </tr>
+                  </table>`,
+                methods: {
+                    findCars: function() {
+                         this.$emit('findCars');
+                    }
+                }
+            })
+    
+            Vue.component( 'car-list_row', {
+                props: ['item', 'index', 'color'],
+                template: `<tr><td>{{item.id}}</td><td>{{item.brand}}</td><td>{{item.model}}</td><td>{{item.color}}</td><td align="center">
+                 <button v-on:click = "infoCar(item.id, item.color)">info</button>
+                    </td></tr>`,
+                methods: {
+                    infoCar: function(id, color) {
+                        //this.$emit('basket_minus', this.index);
+                    }
+                }
+
+            });
+            
+            Vue.component( 'car-list', {
+                props: ['list'],
+                template: `<table>
+                    <caption>List of cars</caption>
+                    <tr>
+                      <th>ID</th>
+                      <th>Brand</th>
+                      <th>Model</th>
+                      <th>Color</th>
+                      <th>info</th>
+                    </tr>
+                    <car-list_row v-for = "(item, index) in list" :item="item" :index="index"></car-list_row>
+                  </table>`
+
+            });
+            
             new Vue({
                 el: "#CarMarket",
                 data: function(){
                     return {
-                        resp: '[]'
+                        info: '',
+                        listCar: []
                     }
+                },
+                methods: {
+                    restuctInfo: function(obj) {
+                        for (key in obj) {
+                           obj[key] = {selected_value: null, select: obj[key]};
+                        }
+                        return obj;
+                    },
+                    loadListCars: function(){
+                        conditionIsSet = false;
+                        for (key in this.info) {
+                            if (this.info[key].selected_value){
+                                conditionIsSet = true; breack;
+                            }
+                        }
+                        if (conditionIsSet){
+                            //axios.get('http://173.212.224.161/REST/server/api/carMarketApi/listCars').then(response => (this.listCar = response.data));
+                            delete this.listCar[0];
+                        }else{
+                            axios.get('http://173.212.224.161/REST/server/api/carMarketApi/listCars').then(response => (this.listCar = response.data));
+                        }
+                    }
+                },
+                beforeMount() {
+                    axios.get('http://173.212.224.161/REST/server/api/carMarketApi/getDataDescription').then(response => (this.info = this.restuctInfo(response.data)))
                 },
                 mounted() {
-                axios
-                    .get('http://tc.geeksforless.net/~user10/REST/server/api/carMarketApi/listCars') 
-                    .then(response => (this.resp = response));
-                },
-                computed: {
-                    info: function(){
-                    return this.resp.data;
-                    }
+                    this.loadListCars();
                 }
 
             });
