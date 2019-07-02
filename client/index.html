@@ -17,8 +17,16 @@
                 <h1>Market</h1>
                 <car-condition :conditions = "info" v-on:load_list_cars="loadlistcars()"> </car-condition>
                 <car-list :list = "listCar"> </car-list>
+                <button v-on:click = "setOrder()">order test</button>
             </div>
         <script>
+            //import config from 'config.js';
+
+            const base = axios.create({
+              baseURL: "http://173.212.224.161/REST/server/api"//config.BASE_API_URL
+            });
+            
+            Vue.prototype.$http = base
             Vue.config.devtools  = true;
 
             Vue.component( 'car-condition_row', {
@@ -104,6 +112,9 @@
                         }
                         return obj;
                     },
+                    setOrder: function(){
+                        this.$http.post('/carMarketApi/setOrder', {idCar: 33, name: "Fort", surName: "Fikus", paymentMethod: "cash"}).then(response => {});
+                    },
                     loadlistcars: function(){
                         conditions = this.getCondition();
                         count = 0;
@@ -111,17 +122,17 @@
                             count++; break;
                         }
 
-                        if (this.rrr!=0){
-                            axios.get('http://tc.geeksforless.net/~user10/REST/server/api/carMarketApi/findCars', {
+                        if (count!=0){
+                             this.$http.get('/carMarketApi/findCars', {
                                 params: conditions}).then(response => (this.listCar = response.data));
                             
                         }else{
-                            axios.get('http://tc.geeksforless.net/~user10/REST/server/api/carMarketApi/listCars').then(response => (this.listCar = response.data));
+                             this.$http.get('/carMarketApi/listCars').then(response => (this.listCar = response.data));
                         }
                     }
                 },
                 beforeMount() {
-                    axios.get('http://tc.geeksforless.net/~user10/REST/server/api/carMarketApi/getDataDescription').then(response => (this.info = this.restuctInfo(response.data)))
+                     this.$http.get('/carMarketApi/getDataDescription').then(response => (this.info = this.restuctInfo(response.data)))
                 },
                 mounted() {
                     this.loadlistcars();

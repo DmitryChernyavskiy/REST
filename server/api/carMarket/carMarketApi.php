@@ -19,7 +19,7 @@ class carMarketApi
             $url=substr($url, 0, $str);
         };
         $this->requestUri = explode('/', $url);
-        $this->requestUri = array_splice($this->requestUri,4);
+        $this->requestUri = array_splice($this->requestUri,3);
         $this->requestParams = $_REQUEST;
         $this->method = $_SERVER['REQUEST_METHOD'];
         if ($this->method == 'POST' && array_key_exists('HTTP_X_HTTP_METHOD', $_SERVER))
@@ -106,12 +106,12 @@ class carMarketApi
     }
     public function setOrder()//post
     {
-        $idCar = (array_key_exists('idCar', $this->requestParams) ?  $this->requestParams['idCar']  : '');
-        $name = (array_key_exists('name', $this->requestParams) ?  $this->requestParams['name']  : '');
-        $surName = (array_key_exists('surName', $this->requestParams) ?  $this->requestParams['surName']  : '');
-        $paymentMethod = (array_key_exists('paymentMethod', $this->requestParams) ?  $this->requestParams['paymentMethod']  : '');
+        $idCar = $this->requestParams['idCar'];
+        $name = $this->requestParams['name'];
+        $surName = $this->requestParams['surName'];
+        $paymentMethod = $this->requestParams['paymentMethod'];
         
-        if($idCar && $name && $surName && $paymentMethod)
+        if(isset($idCar) && isset($name) && isset($surName) && isset($paymentMethod))
         {
             $res = $this->carMarket->setOrder($idCar, $name, $surName, $paymentMethod);
             if($res)
