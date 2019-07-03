@@ -34,7 +34,6 @@ class carMarketApi
             {
                 throw new Exception("Unexpected Header");
             }
-            //$this->requestParams = json_decode(file_get_contents('php://input'), true);
         }
         $user = $_SERVER['PHP_AUTH_USER'];
         $pass = $_SERVER['PHP_AUTH_PW'];
@@ -107,7 +106,6 @@ class carMarketApi
     }
     public function setOrder()//post
     {
-        $this->requestParams = json_decode(file_get_contents('php://input'), true);
         $idCar = $this->requestParams['idCar'];
         $name = $this->requestParams['name'];
         $surName = $this->requestParams['surName'];
@@ -121,6 +119,6 @@ class carMarketApi
                 return $this->response('Data saved.', 200);
             }
         }
-        return $this->response("Saving error".$idCar, 500);
+        return $this->response("Saving error", 500);
     }
 }

@@ -23,7 +23,7 @@
             //import config from 'config.js';
 
             const base = axios.create({
-              baseURL: "http://173.212.224.161/REST/server/api"//config.BASE_API_URL
+              baseURL: "http://tc.geeksforless.net/~user10/REST/server/api"//config.BASE_API_URL
             });
             
             Vue.prototype.$http = base
@@ -95,6 +95,10 @@
                         listCar: []
                     }
                 },
+                http: {
+                    emulateJSON: true,
+                    emulateHTTP: true
+                },
                 methods: {
                     restuctInfo: function(obj) {
                         for (key in obj) {
@@ -113,7 +117,12 @@
                         return obj;
                     },
                     setOrder: function(){
-                        this.$http.post('/carMarketApi/setOrder', {idCar: 33, name: "Fort", surName: "Fikus", paymentMethod: "cash"}).then(response => {});
+                        this.$http.post(
+                            '/carMarketApi/setOrder', 
+                            
+                            {idCar: 33, name: "Fort", surName: "Fikus", paymentMethod: "cash"},
+                            
+                        ).then(response => {});
                     },
                     loadlistcars: function(){
                         conditions = this.getCondition();
