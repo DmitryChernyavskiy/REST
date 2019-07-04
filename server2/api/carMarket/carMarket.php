@@ -1,5 +1,5 @@
 <?php
-include_once "../libs/MySQL.php";
+include_once "./libs/MySQL.php";
 include_once "config.php";
 
 class carMarket

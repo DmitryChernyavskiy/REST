@@ -1,8 +1,8 @@
 <?php
-include_once "../libs/MySQL.php";
+include_once "./libs/MySQL.php";
 include_once "config.php";
 
-class ysers
+class users
 {
     private $DB;
     function __construct()
@@ -15,26 +15,43 @@ class ysers
         unset($this->DB);
     }
  
-    public function findUser($user)
+    public function findUser($var)
     {
+        $user = $var['user'];
+        $pass = $var['pass'];
         if (!isset($user) || $user="")
         {
-           return null;
+           return true;
         };
+
+        //rest
+        $test = ['user10'=>'123'];
+        if($test[$user] == $pass)
+        {
+            return true;
+        }
   
-        $res = $query = $this->DB->connect()->setTableName("users")->SetFild("name")->SetFild("pass")->setConditions("name", $user)->execution();
+        $query = $this->DB->connect()->setTableName("users")->SetFild("name")->SetFild("pass")->setConditions("name", $user);
+        if (!isset($pass) || $pass="")
+        {
+            $query->setConditions("pass", $pass);
+        }
+        $res  = $query->execution();
 
-        return $res;
-    }
-
-    public function setUser($user, $pass)
-    {
-        $res = $this->findUser($user);
         if (!$res || count($user)!=0)
         {
             return null;
         }
-        if (isset($user) && isset($pass))
+
+        return $res;
+    } 
+
+    public function setUser($var)
+    {
+        $user = $var['user'];
+        $pass = $var['pass'];
+        
+        if (isset($user) && isset($pass) && !$this->findUser($var))
         {
             $this->DB->connect()->setTableName("user")->SetFild("name", $user)->SetFild("pass", $pass)->insert()->execution();
             return $res;

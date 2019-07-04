@@ -1,5 +1,6 @@
 <?php
 include_once "carMarket/carMarket.php";
+include_once "carMarket/config.php";
 include_once "users/users.php";
 include_once "ViewApi.php";
 
@@ -10,7 +11,6 @@ class serverApi
     protected $action = ''; 
     protected $method = ''; //GET|POST|PUT|DELETE
     protected $className;
-    protected $test = ['user10'=>'123']; //test auturisation
     protected $ViewApi;
 
     public function __construct()
@@ -25,6 +25,13 @@ class serverApi
         $this->requestUri = array_splice($this->requestUri,4);
         $this->requestParams = $_REQUEST;
         $this->method = $_SERVER['REQUEST_METHOD'];
+
+        $format = mb_strtolower($this->requestUri[count($this->requestUri)-1]);//DEFINE_FORMAT;
+        if($format != '.txt' && $format != '.html' && $format != '.html')
+        {
+            $format = DEFINE_FORMAT;
+        }
+        $this->ViewApi->setFormat($format);
 
         if ($this->method == 'POST' && array_key_exists('HTTP_X_HTTP_METHOD', $_SERVER))
         {
@@ -41,13 +48,16 @@ class serverApi
         }
         $user = $_SERVER['PHP_AUTH_USER'];
         $pass = $_SERVER['PHP_AUTH_PW'];
-        $validated = (isset($user) && $pass == $this->test[$user]);
+        $users = new users;
+        $validated = (isset($user) && $users->findUser(['user'=> $user,'pass'=> $pass]));
+        return "" ;
         if (!$validated) {
-            header('WWW-Authenticate: Basic realm="My Realm"');
-            $this->ViewAp->response('', 401);
+            //header('WWW-Authenticate: Basic realm="My Realm"');
+            //$this->ViewAp->response('', 401);
             exit;
         }
     }
+
     public function run()
     {
         if(array_shift($this->requestUri) !== 'api')
@@ -55,7 +65,7 @@ class serverApi
             throw new RuntimeException('API Not Found', 404);
         }
         $className = array_shift($this->requestUri);
-        if($className != get_class($this))
+        if(!class_exists($className))
         {
             throw new RuntimeException('class API Not Found', 405);
         }
@@ -70,15 +80,12 @@ class serverApi
         }else{
             $res = $class->{$this->action}($this->requestParams);
         } 
-        return $this->returnResult($res);      
-       
-    }
-    protected function returnResult($res)
-    {
         if($res)
         {
-            return $this->ViewAp->response($res, 200);
+            return $this->ViewApi->response($res, 200);
         }
-        return $this->ViewAp->response('Data not found', 404);
+        return $this->ViewApi->response('Data not found', 404);      
+       
     }
+
 }
