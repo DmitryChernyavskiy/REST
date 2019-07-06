@@ -1,10 +1,10 @@
 <?php
 
-require_once 'carMarket/carMarketApi.php';
+require_once 'serverApi.php';
 
 try 
 {
-    $api = new carMarketApi();
+    $api = new serverApi();
     echo $api->run();
 }
 catch (Exception $e)

@@ -23,9 +23,26 @@
             //import config from 'config.js';
 
             const base = axios.create({
-              baseURL: "http://tc.geeksforless.net/~user10/REST/server/api"//config.BASE_API_URL
+                baseURL: "http://tc.geeksforless.net/~user10/REST/server/api"//config.BASE_API_URL
+                /*auth: {
+                    username: 'user10',
+                    password: '125'
+                }*/
+
             });
-            
+
+            autorize = {
+                /*withCredentials: true,
+                headers: {
+                    "Accept": "application/json",
+                    "Content-Type": "application/json"
+                },*/
+                auth: {
+                    username: "user10",
+                    password: "777"
+                }
+            };
+
             Vue.prototype.$http = base
             Vue.config.devtools  = true;
 
@@ -118,7 +135,7 @@
                     },
                     setOrder: function(){
                         this.$http.post(
-                            '/carMarketApi/setOrder', 
+                            '/carMarket/setOrder', 
                             
                             {idCar: 33, name: "Fort", surName: "Fikus", paymentMethod: "cash"},
                             
@@ -126,22 +143,37 @@
                     },
                     loadlistcars: function(){
                         conditions = this.getCondition();
+                        console.log(conditions);
+                        //error_log ("\ntest1=".print_r(conditions,true), 3, "/home/user10/public_html/errors.log");
                         count = 0;
                         for (var key in conditions) {
                             count++; break;
                         }
 
                         if (count!=0){
-                             this.$http.get('/carMarketApi/findCars', {
-                                params: conditions}).then(response => (this.listCar = response.data));
+                             this.$http.get('/carMarket/findCars', {
+                                params: conditions,
+                                auth: {
+                                    username: "user10",
+                                    password: "777"
+                                }}).then(response => (this.listCar = response.data));
                             
                         }else{
-                             this.$http.get('/carMarketApi/listCars').then(response => (this.listCar = response.data));
-                        }
+                             this.$http.get('/carMarket/listCars', {
+                                auth: {
+                                    username: "user10",
+                                    password: "777"
+                                }}).then(response => (this.listCar = response.data));
+                        };
+                        
                     }
                 },
                 beforeMount() {
-                     this.$http.get('/carMarketApi/getDataDescription').then(response => (this.info = this.restuctInfo(response.data)))
+                    this.$http.get('/carMarket/getDataDescription', {
+                        auth: {
+                            username: "user10",
+                            password: "777"
+                        }}).then(response => (this.info = this.restuctInfo(response.data)))
                 },
                 mounted() {
                     this.loadlistcars();

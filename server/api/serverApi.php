@@ -25,6 +25,7 @@ class serverApi
         $this->requestUri = array_splice($this->requestUri,4);
         $this->requestParams = $_REQUEST;
         $this->method = $_SERVER['REQUEST_METHOD'];
+        //error_log ("_1_ ".$this->method, 3, "/home/user10/public_html/errors.log");
 
         $format = mb_strtolower($this->requestUri[count($this->requestUri)-1]);//DEFINE_FORMAT;
         if($format != '.txt' && $format != '.html' && $format != '.html')
@@ -46,16 +47,7 @@ class serverApi
                 throw new Exception("Unexpected Header");
             }
         }
-        $user = $_SERVER['PHP_AUTH_USER'];
-        $pass = $_SERVER['PHP_AUTH_PW'];
-        $users = new users;
-        $validated = (isset($user) && $users->findUser(['user'=> $user,'pass'=> $pass]));
-        return "" ;
-        if (!$validated) {
-            //header('WWW-Authenticate: Basic realm="My Realm"');
-            //$this->ViewAp->response('', 401);
-            exit;
-        }
+        
     }
 
     public function run()
@@ -75,11 +67,24 @@ class serverApi
         {
             throw new RuntimeException('Invalid Method '.$this->action, 405);
         }
-        if($this->method = 'PUT' || $this->method = 'POST'){
+
+        $user = $_SERVER['PHP_AUTH_USER'];
+        $pass = $_SERVER['PHP_AUTH_PW'];
+        $users = new users;
+        $validated = (isset($user) && $users->findUser(['user'=> $user,'pass'=> $pass]));
+        if (!$validated && $className != "users") {
+            header('WWW-Authenticate: Basic realm="My Realm"');
+            return $this->ViewApi->response('', 401);
+        }
+
+        if(count($this->requestParams) && ($this->method == 'PUT' || $this->method == 'POST'))
+        {
             $res = $class->{$this->action}(json_decode(file_get_contents('php://input'), true));
         }else{
+            //error_log ("\n2_listcar".print_r($this->requestParams,true)."\n", 3, "/home/user10/public_html/errors.log");
             $res = $class->{$this->action}($this->requestParams);
         } 
+        
         if($res)
         {
             return $this->ViewApi->response($res, 200);

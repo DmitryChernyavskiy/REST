@@ -19,25 +19,23 @@ class users
     {
         $user = $var['user'];
         $pass = $var['pass'];
-        if (!isset($user) || $user="")
+        if (!isset($user) || $user=="")
         {
-           return true;
+           return null;
         };
 
-        //rest
-        $test = ['user10'=>'123'];
+        $test = ['user10'=>'777'];
         if($test[$user] == $pass)
         {
             return true;
         }
-  
+        
         $query = $this->DB->connect()->setTableName("users")->SetFild("name")->SetFild("pass")->setConditions("name", $user);
-        if (!isset($pass) || $pass="")
+        if (!isset($pass) || $pass=="")
         {
             $query->setConditions("pass", $pass);
         }
         $res  = $query->execution();
-
         if (!$res || count($user)!=0)
         {
             return null;
